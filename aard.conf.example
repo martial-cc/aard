@@ -1,0 +1,25 @@
+AARD_ROOT="MAKECONFROOT"
+
+AARD_DICTIONARY_PATH="$AARD_ROOT/word.txt"
+AARD_EMOJI_PATH="$AARD_ROOT/emoji.txt"
+
+AARD_HISTORY_PATH="$HOME/.ksh_history"
+AARD_LOG_PATH="$HOME/.aard.log"
+AARD_PDF_PATH="$HOME/.aard.pdf"
+AARD_QR_PATH="$HOME/.aard.qr.png"
+
+AARD_CLIP_GET='xsel -o --clipboard'
+AARD_CLIP_SET='xsel -i --clipboard'
+AARD_DATE_FORMAT='%Y-%m-%d.%H:%M:%S'
+AARD_EDITOR='vi'
+AARD_IMAGE='sxiv'
+AARD_MEDIA='mpv'
+AARD_PDF='mupdf -r 120'
+AARD_PROMPT='dmenu -i -l 32 -p'
+AARD_TTY='xterm'
+
+AARD_X_CLIPBOARD="yes"
+AARD_X_DEFINEPDF="yes"
+AARD_X_PDFSHOW="yes"
+AARD_X_REPORT="yes"
+AARD_X_STATUS="yes"

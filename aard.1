@@ -1,0 +1,250 @@
+.\"MIT/X Consortium License
+.\"
+.\"© 2021-2022 Carl H. Henriksson <aard at martial dot cc>
+.\"
+.\"Permission is hereby granted, free of charge, to any person obtaining a
+.\"copy of this software and associated documentation files (the "Software"),
+.\"to deal in the Software without restriction, including without limitation
+.\"the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\"and/or sell copies of the Software, and to permit persons to whom the
+.\"Software is furnished to do so, subject to the following conditions:
+.\"
+.\"The above copyright notice and this permission notice shall be included in
+.\"all copies or substantial portions of the Software.
+.\"
+.\"THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\"IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\"FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+.\"THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\"LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\"FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+.\"DEALINGS IN THE SOFTWARE.
+.Dd $Mdocdate$
+.Dt AARD 1
+.Os
+.Sh NAME
+.Nm aard
+.Nd modular action interface
+.Sh SYNOPSIS
+.Nm
+.Op Fl v
+.Op Ar option ...
+.Sh DESCRIPTION
+The
+.Nm
+utility facilitates the execution of arbitrary actions in X.
+.Pp
+Enabling the user to execute multiple functions (options) in series,
+.Nm
+provides a modular interface to action composition.
+.Pp
+The program uses an internal <buffer> to hold data. That <buffer> can read from,
+or write to the X clipboard.
+By default, the <buffer> is written to the X clipboard at succesful program exit.
+.Pp
+The options are provided as arguments.
+Notably, every option can be destructive to the data in the <buffer>,
+overwriting or modifying it. The options are as follows:
+.Bl -tag -width Ds
+.It Fl v
+Print version information and exit program.
+.It Ar -
+Populate the <buffer> with data read from standard input.
+.It Ar base64
+Encode the data in the <buffer> to base64 and load that base64 data into the <buffer>.
+.It Ar clean
+Remove leading and trailing whitespace, and newline characters from the <buffer>.
+.It Ar clear
+Remove all data in the <buffer>.
+.It Ar define
+Fetch definition of the grammatical unit currently in the <buffer> from
+an online source. By default, a pdf with the definition is created and opened,
+and the filesystem path to that pdf is loaded into the <buffer>.
+.It Ar edit
+Edit the data in the <buffer> with a text editor. This requires
+.Nm
+to be called from a terminal.
+.It Ar emoji
+Select an emoji from a prompt, and load that emoji into the <buffer>.
+.It Ar fetch
+Select an entity from the filesystem, the
+.Nm
+log, or the users shell history. Load the selected entity into the <buffer>.
+.It Ar file
+Interpret the <buffer> data as a filesystem path, and load the content of that
+file into the <buffer>.
+.It Ar help
+List all
+.Nm
+options and their explanations in a prompt, enabling the user to select one option.
+That option is then executed.
+.It Ar host
+List contents of the system hosts file in a prompt, enabling the user to select one entry.
+The ip of the selected entry is then loaded into the <buffer>.
+.It Ar html
+Interpret the data in the <buffer> as an URL, and request the html source from that URL.
+That target source is then loaded into the <buffer>.
+.It Ar htmlx
+Interpret the data in the <buffer> as an URL, and request the html render from that URL.
+That text render is then loaded into the <buffer>.
+.It Ar image
+Interpret the data in the <buffer> as a filesystem path, and open that path with an image viewer.
+.It Ar light
+Interpret the data in the <buffer> as an integer representing percent.
+Set the X display backlight to that percent.
+.It Ar log
+Timestamp and append the data in the <buffer> to the
+.Nm
+log.
+.It Ar media
+Interpret the data in the <buffer> as a filesystem path, and open that path with a media player.
+.It Ar option
+Open a prompt, enabling the user to input
+.Nm
+options. Then execute
+.Nm
+with those options.
+.It Ar paste
+Write the data in the <buffer> to standard output.
+.It Ar pdf
+Create a pdf with the data in the <buffer>, then load the filesystem path to that
+created pdf into the <buffer>.
+Default behaviour is to open that pdf with a pdf viewer after creation.
+.It Ar post
+Open a prompt, enabling the user to input text. That text is then postfixed to the
+data in the <buffer>.
+.It Ar pre
+Open a prompt, enabling the user to input text. That text is then prefixed to the
+data in the <buffer>.
+.It Ar qr
+Create a QR code with the data in the <buffer> and save it as png,
+then load the filesystem path to that created png file into the <buffer>.
+Default behaviour is to open that png with an image viewer after creation.
+.It Ar random
+Fetch true random data from an online source. Load that data as an ASCII
+encoded hexadecimal string into the <buffer>.
+.It Ar report
+Pass the data in the <buffer> to the reporting system.
+.It Ar run
+Open a prompt, enabling the user to input text. That text is then executed in a shell
+as a command. The standard output, and standard error of that command, is then loaded into the <buffer>.
+.It Ar select
+Display the data in the <buffer> in a prompt, enabling the user to select one entry.
+That entry is loaded into the <buffer>.
+.It Ar set
+Open a prompt, enabling the user to input text. That text is loaded into the <buffer>.
+.It Ar tty
+Open a terminal, as defined in the
+.Nm
+configuration file.
+.It Ar url
+Run an URL isolation program with the data in the <buffer>, generating a list of the URL addresses found
+in the <buffer>. Then list those URL's in a prompt, enabling the user to select one URL.
+That URL is loaded into the <buffer>.
+.It Ar word
+Select a dictionary word from a prompt, and load it into the <buffer>.
+.It Ar x
+Interpret the data in the <buffer> as a command. That command is executed in a shell.
+The operations standard output, and standard error, is be loaded into the <buffer>.
+.It Ar yt
+Interpret the data in the <buffer> as YouTube search terms, and request search results for those terms online.
+Then list the returned results in a prompt, enabling the user to select one entity.
+The URL to that entity is loaded into the <buffer>.
+.El
+.Sh CONFIGURATION
+.Bl -tag -width Ds
+.It Ev AARD_CLIP_GET
+Command for reading the X clipboard
+.It Ev AARD_CLIP_SET
+Command for setting the X clipboard
+.It Ev AARD_DATE_FORMAT
+Format definition for time and date printing.
+.It Ev AARD_DICTIONARY_PATH
+Path to word list file used in: word
+.It Ev AARD_EDITOR
+Command for editing text files used in: editor
+.It Ev AARD_EMOJI_PATH
+Path to emoji list file used in: emoji
+.It Ev AARD_HISTORY_PATH
+Path to shell history file used in: fetch
+.It Ev AARD_IMAGE
+Command for viewing image files used in: image qr
+.It Ev AARD_LOG_PATH
+Path to log file used in: fetch log media yt
+.It Ev AARD_MEDIA
+Command for playing media files used in: media
+.It Ev AARD_PDF
+Command for viewing pdf files used in: define pdf
+.It Ev AARD_PDF_PATH
+Path to pdf file used in: pdf
+.It Ev AARD_PROMPT
+Command for selecting single entries from lists
+.It Ev AARD_QR_PATH
+Path to QR image file used in: qr
+.It Ev AARD_ROOT
+aard configuration directory. Default path is:
+.Pa $HOME/.config/aard
+.It Ev AARD_TTY
+Command for opening terminal, used in: tty
+.It Ev AARD_X_CLIPBOARD
+Configuration option defining whether to write the <buffer> to the
+X clipboard on succesful program exit. Leave empty for "no".
+.It Ev AARD_X_DEFINEPDF
+Configuration option defining whether to create a pdf with the
+definition text or not. Leave empty for "no".
+.It Ev AARD_X_PDFSHOW
+Configuration option defining whether to open the created pdf in the pdf viewer
+defined in AARD_PDF or not. Leave empty for "no".
+.It Ev AARD_X_REPORT
+Configuration option defining whether to use the reporting
+system or not. Leave empty for "no"
+.It Ev AARD_X_STATUS
+Configuration option defining whether to use the status
+system or not. Leave empty for "no"
+.El
+.Sh FILES
+.Bl -tag -width Ds
+.It Pa $AARD_ROOT/aard.conf
+Necessary file containing aliases, paths and configuration.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh EXAMPLES
+List all options, allowing the user to select one and run
+.Nm
+with that option
+.Pp
+.Dl aard help
+.Pp
+Find spelling of a word, and request the definition of that word online
+.Pp
+.Dl aard word define
+.Pp
+Find and select emoji based on keywords, and copy it to clipboard
+.Pp
+.Dl aard emoji
+.Pp
+Find file, select line from it, and copy that line into clipboard.
+.Pp
+.Dl aard fetch file select
+.Pp
+Fetch command from shell history, edit it, then execute it (the edit
+option must be executed from a terminal)
+.Pp
+.Dl aard fetch edit x
+.Sh DIAGNOSTICS
+.Nm
+includes a reporting system for descriptive error messages,
+and a simpler status reporting system for program state.
+Example scripts are installed as aard_report and aard_status.
+.Sh AUTHORS
+Carl H. Henriksson <aard at martial dot cc>
+.Sh CAVEATS
+The aard_report and aard_status example scripts are destructive to the
+X primary and secondary buffer; those systems should be disabled in
+the configuration file if that behaviour is unwanted.
+.Sh SECURITY CONSIDERATIONS
+.Nm
+uses temporary files. Those files containing potentially sensitive
+data may be left in the filesystem on program fail.
+.El
