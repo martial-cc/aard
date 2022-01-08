@@ -67,6 +67,11 @@ aard_assertzero() {
 	fi
 }
 
+aard_cleanup() {
+	rm "$AARD_BUFFER" 2> /dev/null
+	rm "$AARD_FILE" 2> /dev/null
+}
+
 aard_log() {
 	printf '%s %s\n' "$(aard_date)" "$(cat "$AARD_BUFFER")" >> "$AARD_LOG_PATH"
 	aard_assertzero 1 'aard_log: Failed to write log'
@@ -91,8 +96,7 @@ aard_quit() {
 		AARD_QUIT_RETURN="$1"
 	fi
 
-	rm "$AARD_BUFFER"
-	rm "$AARD_FILE"
+	aard_cleanup
 
 	exit "$AARD_QUIT_RETURN"
 }
@@ -539,9 +543,7 @@ aard_run() {
 		cat "$AARD_BUFFER" | aard_clip_set
 	fi
 
-	# Clean up
-	rm "$AARD_BUFFER"
-	rm "$AARD_FILE"
+	aard_cleanup
 }
 
 aard_run $*
