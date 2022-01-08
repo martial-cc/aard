@@ -512,7 +512,8 @@ aard_run() {
 	fi
 
 	if [ "$#" -eq 0 ]; then
-		aard_quit 1 'No arguments provided'
+		printf 'No arguments provided\n'
+		exit 1
 	fi
 
 	# Configuration
