@@ -22,7 +22,7 @@ clean:
 conf:
 	@mkdir -p ${AARD_ROOT}
 	@sed -e "s,MAKECONFROOT,${AARD_ROOT}," < "aard.conf.example" > "${AARD_ROOT}/aard.conf"
-	@sh ./aard_setup.sh "${AARD_ROOT}/aard.conf"
+	@sh ./aard_fetch.sh "${AARD_ROOT}/aard.conf"
 
 help:
 	@printf 'Version: %s\n' "${VERSION}"
