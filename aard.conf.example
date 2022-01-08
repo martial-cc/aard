@@ -1,13 +1,19 @@
+# This variable is defined in the Makefile
 AARD_ROOT="MAKECONFROOT"
 
+# Paths to input files
 AARD_DICTIONARY_PATH="$AARD_ROOT/word.txt"
 AARD_EMOJI_PATH="$AARD_ROOT/emoji.txt"
 
-AARD_HISTORY_PATH="$HOME/.ksh_history"
+# Paths to output files
 AARD_LOG_PATH="$HOME/.aard.log"
 AARD_PDF_PATH="$HOME/.aard.pdf"
 AARD_QR_PATH="$HOME/.aard.qr.png"
 
+# Path to user shell history
+AARD_HISTORY_PATH="$HOME/.ksh_history"
+
+# Command definitions
 AARD_CLIP_GET='xsel -o --clipboard'
 AARD_CLIP_SET='xsel -i --clipboard'
 AARD_DATE_FORMAT='%Y-%m-%d.%H:%M:%S'
@@ -18,6 +24,7 @@ AARD_PDF='mupdf -r 120'
 AARD_PROMPT='dmenu -i -l 32 -p'
 AARD_TTY='xterm'
 
+# Configurations. Leave fields empty for "no"
 AARD_X_CLIPBOARD="yes"
 AARD_X_DEFINEPDF="yes"
 AARD_X_PDFSHOW="yes"
