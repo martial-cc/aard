@@ -1,4 +1,4 @@
-VERSION = 0.1.0
+VERSION = 0.1.1
 AARD_ROOT = $$HOME/.config/aard
 
 EXECUTABLES = aard aard_report aard_status
