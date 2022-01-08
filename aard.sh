@@ -67,11 +67,6 @@ aard_assertzero() {
 	fi
 }
 
-aard_cleanup() {
-	rm "$AARD_BUFFER" 2> /dev/null
-	rm "$AARD_FILE" 2> /dev/null
-}
-
 aard_log() {
 	printf '%s %s\n' "$(aard_date)" "$(cat "$AARD_BUFFER")" >> "$AARD_LOG_PATH"
 	aard_assertzero 1 'aard_log: Failed to write log'
@@ -96,7 +91,7 @@ aard_quit() {
 		AARD_QUIT_RETURN="$1"
 	fi
 
-	aard_cleanup
+	aard_post
 
 	exit "$AARD_QUIT_RETURN"
 }
@@ -504,6 +499,34 @@ aard_process() {
 	aard_status_set 'SUCCESS'
 }
 
+aard_post() {
+	rm "$AARD_BUFFER" 2> /dev/null
+	rm "$AARD_FILE" 2> /dev/null
+}
+
+aard_pre() {
+	# Configuration
+	if [ -z "$AARD_CONF" ]; then
+		AARD_CONF="MAKECONFROOT/aard.conf"
+		if [ -z "$AARD_CONF" ]; then
+			aard_quit 2 'aard_run: Failed to find configuration file'
+		fi
+	fi
+
+	if [ ! -r "$AARD_CONF" ]; then
+		aard_quit 3 'aard_run: Failed to read file'
+	fi
+
+	. "$AARD_CONF"
+
+	# Files
+	AARD_BUFFER="$(mktemp -t aard."$$".XXXXXXXX)"
+	aard_assertzero 4 'aard_run: Failed to create buffer file'
+
+	AARD_FILE="$(mktemp -t aard."$$".XXXXXXXX)"
+	aard_assertzero 5 'aard_run: Failed to create temporary file'
+}
+
 aard_run() {
 	# Arguments
 	if [ "$1" == '-v' ]; then
@@ -516,24 +539,7 @@ aard_run() {
 		exit 1
 	fi
 
-	# Configuration
-	if [ -z "$AARD_CONF" ]; then
-		AARD_CONF="MAKECONFROOT/aard.conf"
-		if [ -z "$AARD_CONF" ]; then
-			aard_quit 2 'aard_run: Failed to find configuration file'
-		fi
-	fi
-	if [ ! -r "$AARD_CONF" ]; then
-		aard_quit 3 'aard_run: Failed to read file'
-	fi
-	. "$AARD_CONF"
-
-	# Files
-	AARD_BUFFER="$(mktemp -t aard."$$".XXXXXXXX)"
-	aard_assertzero 4 'aard_run: Failed to create buffer file'
-
-	AARD_FILE="$(mktemp -t aard."$$".XXXXXXXX)"
-	aard_assertzero 5 'aard_run: Failed to create temporary file'
+	aard_pre
 
 	aard_clip_get > "$AARD_BUFFER"
 
@@ -544,7 +550,7 @@ aard_run() {
 		cat "$AARD_BUFFER" | aard_clip_set
 	fi
 
-	aard_cleanup
+	aard_post
 }
 
 aard_run $*
