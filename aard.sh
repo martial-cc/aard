@@ -170,6 +170,23 @@ aard_select() {
 
 # Main
 
+aard_arg() {
+	if [ "$#" -eq 0 ]; then
+		printf 'No arguments provided\n'
+		exit 1
+	fi
+
+	case "$1" in
+	-v)
+		printf '%s\n' 'aard-VERSION'
+		exit 0
+		;;
+	*)
+		return
+		;;
+	esac
+}
+
 aard_iterate() {
 	for option in "$@"; do
 		aard_process "$option"
@@ -528,24 +545,11 @@ aard_pre() {
 }
 
 aard_run() {
-	# Arguments
-	if [ "$1" == '-v' ]; then
-		printf '%s\n' 'aard-VERSION'
-		exit 0
-	fi
-
-	if [ "$#" -eq 0 ]; then
-		printf 'No arguments provided\n'
-		exit 1
-	fi
-
+	aard_arg $*
 	aard_pre
 
 	aard_clip_get > "$AARD_BUFFER"
-
-	# Run
 	aard_iterate $*
-
 	if [ ! -z "$AARD_X_CLIPBOARD" ]; then
 		cat "$AARD_BUFFER" | aard_clip_set
 	fi
