@@ -177,6 +177,10 @@ aard_arg() {
 	fi
 
 	case "$1" in
+	--help)
+		printf '%s\n' 'usage: aard [-v] [option ...]'
+		exit 0
+		;;
 	-v)
 		printf '%s\n' 'aard-VERSION'
 		exit 0
