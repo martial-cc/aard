@@ -368,7 +368,7 @@ aard_process() {
 		;;
 	option)
 		AARD_OPTION_OPTS="$(printf '' | aard_prompt 'aard option:')"
-		aard_assertzero 3 'aard_process option: Failed to read user input'
+		aard_assertzero 1 'aard_process option: Failed to read user input'
 
 		aard_iterate $AARD_OPTION_OPTS
 		;;
@@ -535,22 +535,22 @@ aard_pre() {
 	if [ -z "$AARD_CONF" ]; then
 		AARD_CONF="MAKECONFROOT/aard.conf"
 		if [ -z "$AARD_CONF" ]; then
-			aard_quit 2 'aard_run: Failed to find configuration file'
+			aard_quit 1 'aard_run: Failed to find configuration file'
 		fi
 	fi
 
 	if [ ! -r "$AARD_CONF" ]; then
-		aard_quit 3 'aard_run: Failed to read file'
+		aard_quit 2 'aard_run: Failed to read file'
 	fi
 
 	. "$AARD_CONF"
 
 	# Files
 	AARD_BUFFER="$(mktemp -t aard."$$".XXXXXXXX 2> /dev/null)"
-	aard_assertzero 4 'aard_run: Failed to create buffer file'
+	aard_assertzero 3 'aard_run: Failed to create buffer file'
 
 	AARD_FILE="$(mktemp -t aard."$$".XXXXXXXX 2> /dev/null)"
-	aard_assertzero 5 'aard_run: Failed to create temporary file'
+	aard_assertzero 4 'aard_run: Failed to create temporary file'
 }
 
 aard_run() {
