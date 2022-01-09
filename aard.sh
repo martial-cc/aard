@@ -172,7 +172,7 @@ aard_select() {
 
 aard_arg() {
 	if [ "$#" -eq 0 ]; then
-		printf 'No arguments provided\n'
+		printf 'aard: No arguments provided\n'
 		exit 1
 	fi
 
@@ -253,7 +253,6 @@ aard_process() {
 		cat "$AARD_BUFFER" > "$AARD_FILE"
 
 		eval " "$AARD_EDITOR" "$AARD_FILE"" 2> /dev/null
-
 		aard_assertzero 1 'aard_process edit: Failed to edit temporary file'
 
 		cat "$AARD_FILE" > "$AARD_BUFFER"
@@ -361,8 +360,8 @@ aard_process() {
 		fi
 
 		aard_log
-
 		AARD_TARGET="$(cat "$AARD_BUFFER")"
+
 		eval " "$AARD_MEDIA" "$AARD_TARGET"" 2> /dev/null
 		aard_assertzero 2 'aard_process media: Failed to play media'
 		;;
@@ -400,6 +399,7 @@ aard_process() {
 
 		if [ ! -z "$AARD_X_PDFSHOW" ]; then
 			AARD_TARGET="$(cat "$AARD_BUFFER")"
+
 			eval " "$AARD_PDF" "$AARD_TARGET"" 2> /dev/null
 			aard_assertzero 7 'aard_process pdf: Failed to show pdf'
 		fi
@@ -533,6 +533,7 @@ aard_post() {
 aard_pre() {
 	# Configuration
 	if [ -z "$AARD_CONF" ]; then
+		# This variable is defined in the Makefile
 		AARD_CONF="MAKECONFROOT/aard.conf"
 		if [ -z "$AARD_CONF" ]; then
 			aard_quit 1 'aard_run: Failed to find configuration file'
