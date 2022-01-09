@@ -125,19 +125,19 @@ aard_status_set() {
 # Utilities
 
 aard_date() {
-	date +"$AARD_DATE_FORMAT"
+	date +"$AARD_DATE_FORMAT" 2> /dev/null
 	aard_assertzero 1 'aard_date: Failed to get date'
 }
 
 # Clipboard
 
 aard_clip_get() {
-	eval " "$AARD_CLIP_GET""
+	eval " "$AARD_CLIP_GET"" 2> /dev/null
 	aard_assertzero 1 'aard_clip_get: Failed to read clipboard'
 }
 
 aard_clip_set() {
-	eval " "$AARD_CLIP_SET""
+	eval " "$AARD_CLIP_SET"" 2> /dev/null
 	aard_assertzero 1 'aard_clip_set: Failed to write clipboard'
 }
 
@@ -156,7 +156,7 @@ aard_prompt() {
 
 	AARD_PROMPT_CMD=""$AARD_PROMPT" \""$AARD_PROMPT_MSG"\""
 
-	eval " "$AARD_PROMPT_CMD""
+	eval " "$AARD_PROMPT_CMD"" 2> /dev/null
 	aard_assertzero 2 'aard_prompt: Failed to open prompt'
 }
 
@@ -212,19 +212,17 @@ aard_process() {
 		command -v b64encode > /dev/null 2>&1
 		aard_assertzero 1 'aard_process base64: Failed to find program: b64encode'
 
-		cat "$AARD_BUFFER" | b64encode -o "$AARD_FILE" -
+		b64encode aard < "$AARD_BUFFER" > "$AARD_FILE" 2> /dev/null
 		aard_assertzero 2 'aard_process base64: Failed to encode base64'
 
 		cat "$AARD_FILE" > "$AARD_BUFFER"
 		;;
 	clean)
-		AARD_CLEAN_WHITESPACE="$(cat "$AARD_BUFFER" | awk '$1=$1')"
+		AARD_CLEAN_WHITESPACE="$(awk '$1=$1' "$AARD_BUFFER" 2> /dev/null)"
 		aard_assertzero 1 'aard_process clean: Failed to clean whitespace'
 
-		AARD_CLEAN_NEWLINE="$(printf '%s' "$AARD_CLEAN_WHITESPACE" | tr -d '\n')"
+		printf '%s' "$AARD_CLEAN_WHITESPACE" | tr -d '\n' > "$AARD_BUFFER" 2> /dev/null
 		aard_assertzero 2 'aard_process clean: Failed to clean newline'
-
-		printf '%s' "$AARD_CLEAN_NEWLINE" > "$AARD_BUFFER"
 		;;
 	clear)
 		printf '' > "$AARD_BUFFER"
@@ -236,13 +234,16 @@ aard_process() {
 		AARD_DEFINE_WORD="$(cat "$AARD_BUFFER")"
 		AARD_DEFINE_URL="http://merriam-webster.com/dictionary/"$AARD_DEFINE_WORD""
 
-		w3m -config /dev/null -T html/text "$AARD_DEFINE_URL" > "$AARD_FILE"
+		w3m -config /dev/null -T html/text "$AARD_DEFINE_URL" > "$AARD_FILE" 2> /dev/null
 		aard_assertzero 2 'aard_process define: Failed to fetch html'
 
-		AARD_FORMAT="$(awk '/Definition of/,/Synonyms for*/;/Synonyms for/{exit}' "$AARD_FILE" | sed '$d')"
+		AARD_FORMAT="$(awk '/Definition of/,/Synonyms for*/;/Synonyms for/{exit}' "$AARD_FILE" 2> /dev/null)"
 		aard_assertzero 3 'aard_process define: Failed to format html'
 
-		printf '%s %s\n' "$AARD_DEFINE_WORD" "$AARD_FORMAT" > "$AARD_BUFFER"
+		AARD_CLEAN="$(printf '%s' "$AARD_FORMAT" | sed '$d' 2> /dev/null)"
+		aard_assertzero 4 'aard_process define: Failed to clean data'
+
+		printf '%s %s\n' "$AARD_DEFINE_WORD" "$AARD_CLEAN" > "$AARD_BUFFER"
 
 		if [ ! -z "$AARD_X_DEFINEPDF" ]; then
 			aard_process 'pdf'
@@ -251,7 +252,8 @@ aard_process() {
 	edit)
 		cat "$AARD_BUFFER" > "$AARD_FILE"
 
-		eval " "$AARD_EDITOR" "$AARD_FILE""
+		eval " "$AARD_EDITOR" "$AARD_FILE"" 2> /dev/null
+
 		aard_assertzero 1 'aard_process edit: Failed to edit temporary file'
 
 		cat "$AARD_FILE" > "$AARD_BUFFER"
@@ -269,12 +271,12 @@ aard_process() {
 				if (length($5) < 7)
 					print $2;
 					else print $5
-			}' OFS='' "$AARD_EMOJI_PATH" > "$AARD_FILE"
+			}' OFS='' "$AARD_EMOJI_PATH" > "$AARD_FILE" 2> /dev/null
 		aard_assertzero 2 'aard_process emoji: Failed to format emoji list'
 
 		AARD_EMOJI_CHOSEN="$(expand "$AARD_FILE" | aard_select 'aard emoji')"
 
-		AARD_EMOJI_ISOLATED="$(printf '%s' "$AARD_EMOJI_CHOSEN" | awk -F' ' '{print $1}')"
+		AARD_EMOJI_ISOLATED="$(printf '%s' "$AARD_EMOJI_CHOSEN" | awk -F' ' '{print $1}' 2> /dev/null)"
 		aard_assertzero 3 'aard_process emoji: Failed to isolate emoji'
 
 		printf '%s' "$AARD_EMOJI_ISOLATED" > "$AARD_BUFFER"
@@ -300,17 +302,20 @@ aard_process() {
 		cat "$AARD_FILENAME" > "$AARD_BUFFER"
 		;;
 	help)
-		printf '%s' "$AARD_OPTION" | expand > "$AARD_FILE"
+		printf '%s' "$AARD_OPTION" | expand > "$AARD_FILE" 2> /dev/null
 		aard_assertzero 1 'aard_process help: Failed to expand help'
 
-		AARD_HELP_SELECTION="$(cat "$AARD_FILE" | aard_select 'aard help' | awk '{print $1}')"
+		AARD_HELP_SELECTION="$(cat "$AARD_FILE" | aard_select 'aard help' | awk '{print $1}' 2> /dev/null)"
 		aard_assertzero 2 'aard_process help: Failed to read selection'
 
 		aard_process "$AARD_HELP_SELECTION"
 		;;
 	host)
-		AARD_HOST_SELECTION="$(expand /etc/hosts | aard_select 'aard host' | awk '{print $1}')"
-		aard_assertzero 1 'aard_process host: Failed to isolate selection'
+		AARD_HOST_EXPANDED="$(expand /etc/hosts 2> /dev/null | aard_select 'aard host')"
+		aard_assertzero 1 'aard_process host: Failed to expand selection'
+
+		AARD_HOST_SELECTION="$(printf '%s' "$AARD_HOST_EXPANDED" | awk '{print $1}' 2> /dev/null)"
+		aard_assertzero 2 'aard_process host: Failed to isolate selection'
 
 		printf '%s' "$AARD_HOST_SELECTION" > "$AARD_BUFFER"
 		;;
@@ -318,7 +323,7 @@ aard_process() {
 		command -v w3m > /dev/null 2>&1
 		aard_assertzero 1 'aard_process html: Failed to find program: w3m'
 
-		w3m -config /dev/null -dump_source "$(cat "$AARD_BUFFER")" > "$AARD_FILE"
+		w3m -config /dev/null -dump_source "$(cat "$AARD_BUFFER")" > "$AARD_FILE" 2> /dev/null
 		aard_assertzero 2 'aard_process html: Failed to fetch html'
 
 		cat "$AARD_FILE" > "$AARD_BUFFER"
@@ -327,7 +332,7 @@ aard_process() {
 		command -v w3m > /dev/null 2>&1
 		aard_assertzero 1 'aard_process htmlx: Failed to find program: w3m'
 
-		w3m -config /dev/null -T html/text "$(cat "$AARD_BUFFER")" > "$AARD_FILE"
+		w3m -config /dev/null -T html/text "$(cat "$AARD_BUFFER")" > "$AARD_FILE" 2> /dev/null
 		aard_assertzero 2 'aard_process htmlx: Failed to fetch html'
 
 		cat "$AARD_FILE" > "$AARD_BUFFER"
@@ -337,14 +342,14 @@ aard_process() {
 			aard_quit 1 'aard_process image: Failed to read variable: AARD_IMAGE'
 		fi
 
-		eval " "$AARD_IMAGE" "$(cat "$AARD_BUFFER")""
+		eval " "$AARD_IMAGE" "$(cat "$AARD_BUFFER")"" 2> /dev/null
 		aard_assertzero 2 'aard_process image: Failed to show image'
 		;;
 	light)
 		command -v xbacklight > /dev/null 2>&1
 		aard_assertzero 1 'aard_process light: Failed to find program: xbacklight'
 
-		xbacklight -set "$(cat "$AARD_BUFFER")"
+		xbacklight -set "$(cat "$AARD_BUFFER")" 2> /dev/null
 		aard_assertzero 2 'aard_process light: Failed to set light'
 		;;
 	log)
@@ -358,7 +363,7 @@ aard_process() {
 		aard_log
 
 		AARD_TARGET="$(cat "$AARD_BUFFER")"
-		eval " "$AARD_MEDIA" "$AARD_TARGET""
+		eval " "$AARD_MEDIA" "$AARD_TARGET"" 2> /dev/null
 		aard_assertzero 2 'aard_process media: Failed to play media'
 		;;
 	option)
@@ -385,17 +390,17 @@ aard_process() {
 			aard_quit 4 'aard_process pdf: Failed to read variable: AARD_PDF_PATH'
 		fi
 
-		cat "$AARD_BUFFER" | enscript -p - > "$AARD_FILE"
+		cat "$AARD_BUFFER" | enscript -p - > "$AARD_FILE" 2> /dev/null
 		aard_assertzero 5 'aard_process pdf: Failed to generate postscript'
 
-		ps2pdf "$AARD_FILE" "$AARD_PDF_PATH"
+		ps2pdf "$AARD_FILE" "$AARD_PDF_PATH" 2> /dev/null
 		aard_assertzero 6 'aard_process pdf: Failed to generate pdf'
 
 		printf '%s' "$AARD_PDF_PATH" > "$AARD_BUFFER"
 
 		if [ ! -z "$AARD_X_PDFSHOW" ]; then
 			AARD_TARGET="$(cat "$AARD_BUFFER")"
-			eval " "$AARD_PDF" "$AARD_TARGET""
+			eval " "$AARD_PDF" "$AARD_TARGET"" 2> /dev/null
 			aard_assertzero 7 'aard_process pdf: Failed to show pdf'
 		fi
 		;;
@@ -419,7 +424,7 @@ aard_process() {
 			aard_quit 2 'aard_process qr: Failed to read variable: AARD_QR_PATH'
 		fi
 
-		cat "$AARD_BUFFER" | qrencode -s 24 -o "$AARD_QR_PATH"
+		cat "$AARD_BUFFER" | qrencode -s 24 -o "$AARD_QR_PATH" 2> /dev/null
 		aard_assertzero 3 'aard_process qr: Failed to generate QR'
 
 		printf '%s' "$AARD_QR_PATH" > "$AARD_BUFFER"
@@ -430,10 +435,10 @@ aard_process() {
 		command -v w3m > /dev/null 2>&1
 		aard_assertzero 1 'aard_process random: Failed to find program: w3m'
 
-		w3m -dump_source 'http://random.org/cgi-bin/randbyte?nbytes=4' > "$AARD_FILE"
+		w3m -dump_source 'http://random.org/cgi-bin/randbyte?nbytes=4' > "$AARD_FILE" 2> /dev/null
 		aard_assertzero 2 'aard_process random: Failed to fetch html'
 
-		AARD_RANDOM_ISOLATED="$(hexdump -n 8 -e '2/4 "%08X"' "$AARD_FILE")"
+		AARD_RANDOM_ISOLATED="$(hexdump -n 8 -e '2/4 "%08X"' "$AARD_FILE" 2> /dev/null)"
 		aard_assertzero 3 'aard_process random: Failed to format hex'
 
 		printf '%s' "$AARD_RANDOM_ISOLATED" > "$AARD_BUFFER"
@@ -462,14 +467,14 @@ aard_process() {
 			aard_quit 1 'aard_process tty: Failed to read variable: AARD_TTY'
 		fi
 
-		eval " "$AARD_TTY""
+		eval " "$AARD_TTY"" 2> /dev/null
 		aard_assertzero 2 'aard_process tty: Failed to open terminal'
 		;;
 	url)
 		command -v urlisolator > /dev/null 2>&1
 		aard_assertzero 1 'aard_process url: Failed to find program: urlisolator'
 
-		cat "$AARD_BUFFER" | urlisolator > "$AARD_FILE"
+		cat "$AARD_BUFFER" | urlisolator > "$AARD_FILE" 2> /dev/null
 		aard_assertzero 2 'aard_process url: Failed to isolate url'
 
 		cat "$AARD_FILE" | aard_select 'aard url' > "$AARD_BUFFER"
@@ -479,7 +484,7 @@ aard_process() {
 			aard_quit 1 'aard_process word: Failed to read variable: AARD_DICTIONARY_PATH'
 		fi
 
-		tr -d '\r' < "$AARD_DICTIONARY_PATH" > "$AARD_FILE"
+		tr -d '\r' < "$AARD_DICTIONARY_PATH" > "$AARD_FILE" 2> /dev/null
 		aard_assertzero 2 'aard_process word: Failed to fix newline'
 
 		cat "$AARD_FILE" | aard_select 'aard word' > "$AARD_BUFFER"
@@ -487,7 +492,7 @@ aard_process() {
 	x)
 		cat "$AARD_BUFFER" > "$AARD_FILE"
 
-		chmod +x "$AARD_FILE"
+		chmod +x "$AARD_FILE" 2> /dev/null
 		aard_assertzero 1 'aard_process x: Failed to change file permissions'
 
 		AARD_X_OUTPUT="$(sh "$AARD_FILE" 2>&1)"
@@ -498,14 +503,14 @@ aard_process() {
 		command -v yt-dlp > /dev/null 2>&1
 		aard_assertzero 1 'aard_process yt: Failed to find program: yt-dlp'
 
-		yt-dlp -j "ytsearch16:$(cat "$AARD_BUFFER")" > "$AARD_FILE"
+		yt-dlp -j "ytsearch16:$(cat "$AARD_BUFFER")" > "$AARD_FILE" 2> /dev/null
 		aard_assertzero 2 'aard_process yt: Failed to find URLs'
 
-		AARD_YT_SEARCH="$(awk -F'"' '{print $4, $8}' "$AARD_FILE")"
+		AARD_YT_SEARCH="$(awk -F'"' '{print $4, $8}' "$AARD_FILE" 2> /dev/null)"
 		aard_assertzero 3 'aard_process yt: Failed to format URLs'
 
 		AARD_YT_URL="$(printf '%s' "$AARD_YT_SEARCH" | aard_select 'aard yt' \
-		| awk '{print "http://youtube.com/watch?v=" $1}')"
+		| awk '{print "http://youtube.com/watch?v=" $1}' 2> /dev/null)"
 		aard_assertzero 4 'aard_process yt: Failed to format URL'
 
 		printf '%s' "$AARD_YT_URL" > "$AARD_BUFFER"
@@ -541,10 +546,10 @@ aard_pre() {
 	. "$AARD_CONF"
 
 	# Files
-	AARD_BUFFER="$(mktemp -t aard."$$".XXXXXXXX)"
+	AARD_BUFFER="$(mktemp -t aard."$$".XXXXXXXX 2> /dev/null)"
 	aard_assertzero 4 'aard_run: Failed to create buffer file'
 
-	AARD_FILE="$(mktemp -t aard."$$".XXXXXXXX)"
+	AARD_FILE="$(mktemp -t aard."$$".XXXXXXXX 2> /dev/null)"
 	aard_assertzero 5 'aard_run: Failed to create temporary file'
 }
 
