@@ -329,7 +329,6 @@ aard_process() {
 			aard_quit 1 'aard_process media: Failed to read variable: AARD_MEDIA'
 		fi
 
-		aard_log
 		AARD_TARGET="$(cat "$AARD_BUFFER")"
 
 		eval " $AARD_MEDIA $AARD_TARGET" 2> /dev/null \
