@@ -79,10 +79,8 @@ Included in the installation are example scripts demonstrating simple usage of t
 systems.
 The user is encouraged to modify these scripts to fit their particular environment, so that aard
 can be deeper integrated into their systems as an assistant.
-The two example scripts will use the X primary selection for reporting,
-and the X secondary selection for status.
-Note that these operations will overwrite the X primary and secondary selection;
-disable these systems through the configuration file if that behaviour is unwanted.
+The aard_report example script updates the name of the root window.
+Disabled the system in the configuration file if that behaviour is unwanted.
 
 Involvement
 -----------

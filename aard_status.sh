@@ -4,4 +4,11 @@
 #
 # This script supports the program 'aard'
 
-printf '%s' "$*" | xsel -i --secondary || exit 1
+command -v xsino > /dev/null 2>&1 || exit 1
+
+if [ "$1" == "FAIL" ]; then
+	xsino -n > /dev/null 2>&1
+fi
+if [ "$1" == "SUCCESS" ]; then
+	xsino -y > /dev/null 2>&1
+fi

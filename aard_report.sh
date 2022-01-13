@@ -4,4 +4,6 @@
 #
 # This script supports the program 'aard'
 
-printf '%s' "$*" | xsel -i --primary || exit 1
+pgrep 'dwm' > /dev/null 2>&1 || exit 1
+
+xsetroot -name "$*" > /dev/null 2>&1
