@@ -177,8 +177,6 @@ aard_process() {
 		aard_quit 1 'aard_process: Failed to provide valid argument amount'
 	fi
 
-	aard_status_set 'PROCESSING'
-
 	case "$1" in
 	-)
 		cat - > "$AARD_BUFFER"
@@ -490,8 +488,6 @@ aard_process() {
 		aard_quit 1 "aard_process *: Failed to identify argument; $*"
 		;;
 	esac
-
-	aard_status_set 'SUCCESS'
 }
 
 aard_post() {
@@ -526,11 +522,15 @@ aard_run() {
 	aard_arg "$@"
 	aard_pre
 
+	aard_status_set 'PROCESSING'
+
 	aard_clip_get > "$AARD_BUFFER"
 	aard_iterate "$@"
 	if [ -n "$AARD_X_CLIPBOARD" ]; then
 		aard_clip_set < "$AARD_BUFFER"
 	fi
+
+	aard_status_set 'SUCCESS'
 
 	aard_post
 }
