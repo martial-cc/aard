@@ -25,39 +25,39 @@
 # DEALINGS IN THE SOFTWARE.
 
 AARD_OPTION="\
--		populate <buffer> with data read from standard input
-base64		encode the data in <buffer> to base64
-clean		clean up the data in <buffer>
-clear		remove all data in <buffer>
-define		fetch definition of grammatical unit in <buffer>
-edit		edit the data in <buffer> with a text editor
-emoji		select and emoji and load it into <buffer>
-fetch		load filesystem, log, or shell history entity into <buffer>
-file		read the file data from path in <buffer>
-help		list all options and select one for execution
-host		select and load ip from the system hosts into <buffer>
-html		load source from url to <buffer>
-htmlx		dump render from url to <buffer>
-image		open the <buffer> as an image file
-light		set X backlight to percent integer value in <buffer>
-log		timestamp and append the <buffer> to the log file
-media 		open the <buffer> as a media file
-option		input options and execute them
-paste		write the <buffer> to standard output
-pdf		create a pdf with the data in <buffer>
-post		input and add postfix to <buffer>
-pre		input and add prefix to <buffer>
-qr		create a QR code png with the data in <buffer>
-random		load random ascii encoded hex into <buffer>
-report		pass the <buffer> to the report system
-run		input and execute commands in <buffer> loading output to <buffer>
-select		isolate one line in the <buffer>
-set		set <buffer>
-tty		open terminal
-url		isolate and select an url in <buffer>
-word		select dictionary word and load it into <buffer>
-x		execute <buffer> as command loading output to <buffer>
-yt		search and select youtube video url"
+base64	b	encode the data in <buffer> to base64
+clean	cn	clean up the data in <buffer>
+clear	cr	remove all data in <buffer>
+define	d	fetch definition of grammatical unit in <buffer>
+edit	e	edit the data in <buffer> with a text editor
+emoji	em	select and emoji and load it into <buffer>
+fetch	f	load filesystem, log, or shell history entity into <buffer>
+file	fi	read the file data from path in <buffer>
+help	h	list all options and select one for execution
+host	ho	select and load ip from the system hosts into <buffer>
+html	ht	load source from url to <buffer>
+htmlx	hx	dump render from url to <buffer>
+image	i	open the <buffer> as an image file
+light	li	set X backlight to percent integer value in <buffer>
+log	l	timestamp and append the <buffer> to the log file
+media 	m	open the <buffer> as a media file
+option	o	input options and execute them
+paste	p	write the <buffer> to standard output
+pdf	pd	create a pdf with the data in <buffer>
+post	po	input and add postfix to <buffer>
+pre	pr	input and add prefix to <buffer>
+qr	q	create a QR code png with the data in <buffer>
+random	ra	load random ascii encoded hex into <buffer>
+report	re	pass the <buffer> to the report system
+run	r	input and execute commands in <buffer> loading output to <buffer>
+select	se	isolate one line in the <buffer>
+set	s	set <buffer>
+stdin	-	populate <buffer> with data read from standard input
+tty	t	open terminal
+url	u	isolate and select an url in <buffer>
+word	w	select dictionary word and load it into <buffer>
+x	x	execute <buffer> as command loading output to <buffer>
+yt	y	search and select youtube video url"
 
 # Error and system interface
 
@@ -178,10 +178,7 @@ aard_process() {
 	fi
 
 	case "$1" in
-	-)
-		cat - > "$AARD_BUFFER"
-		;;
-	base64)
+	base64 | b)
 		command -v b64encode > /dev/null 2>&1 \
 			|| aard_quit 1 'aard_process base64: Failed to find program: b64encode'
 
@@ -190,17 +187,17 @@ aard_process() {
 
 		cat "$AARD_FILE" > "$AARD_BUFFER"
 		;;
-	clean)
+	clean | cn)
 		AARD_CLEAN_WHITESPACE="$(awk '$1=$1' "$AARD_BUFFER" 2> /dev/null \
 			|| aard_quit 1 'aard_process clean: Failed to clean whitespace')"
 
 		printf '%s' "$AARD_CLEAN_WHITESPACE" | tr -d '\n' > "$AARD_BUFFER" 2> /dev/null \
 			|| aard_quit 2 'aard_process clean: Failed to clean newline'
 		;;
-	clear)
+	clear | cr)
 		printf '' > "$AARD_BUFFER"
 		;;
-	define)
+	define | d)
 		command -v w3m > /dev/null 2>&1 || aard_quit 1 'aard_process define: Failed to find program: w3m'
 
 		AARD_DEFINE_WORD="$(cat "$AARD_BUFFER")"
@@ -221,7 +218,7 @@ aard_process() {
 			aard_process 'pdf'
 		fi
 		;;
-	edit)
+	edit | e)
 		cat "$AARD_BUFFER" > "$AARD_FILE"
 
 		eval " $AARD_EDITOR $AARD_FILE" \
@@ -229,7 +226,7 @@ aard_process() {
 
 		cat "$AARD_FILE" > "$AARD_BUFFER"
 		;;
-	emoji)
+	emoji | em)
 		if [ -z "$AARD_EMOJI_PATH" ]; then
 			aard_quit 1 'aard_process emoji: Failed to read variable: AARD_EMOJI_PATH'
 		fi
@@ -252,7 +249,7 @@ aard_process() {
 
 		printf '%s' "$AARD_EMOJI_ISOLATED" > "$AARD_BUFFER"
 		;;
-	fetch)
+	fetch | f)
 		find "$HOME" > "$AARD_FILE" 2> /dev/null
 
 		if [ -n "$AARD_HISTORY_PATH" ]; then
@@ -265,14 +262,14 @@ aard_process() {
 
 		aard_select 'aard fetch' > "$AARD_BUFFER" < "$AARD_FILE"
 		;;
-	file)
+	file | fi)
 		AARD_FILENAME="$(cat "$AARD_BUFFER")"
 		if [ ! -r "$AARD_FILENAME" ]; then
 			aard_quit 1 'aard_process file: Failed to read file'
 		fi
 		cat "$AARD_FILENAME" > "$AARD_BUFFER"
 		;;
-	help)
+	help | h)
 		printf '%s' "$AARD_OPTION" | expand > "$AARD_FILE" 2> /dev/null \
 			|| aard_quit 1 'aard_process help: Failed to expand help'
 
@@ -281,7 +278,7 @@ aard_process() {
 
 		aard_process "$AARD_HELP_SELECTION"
 		;;
-	host)
+	host | ho)
 		AARD_HOST_EXPANDED="$(expand /etc/hosts 2> /dev/null | aard_select 'aard host' \
 			|| aard_quit 1 'aard_process host: Failed to expand selection')"
 
@@ -290,7 +287,7 @@ aard_process() {
 
 		printf '%s' "$AARD_HOST_SELECTION" > "$AARD_BUFFER"
 		;;
-	html)
+	html | ht)
 		command -v w3m > /dev/null 2>&1 || aard_quit 1 'aard_process html: Failed to find program: w3m'
 
 		w3m -config /dev/null -dump_source "$(cat "$AARD_BUFFER")" > "$AARD_FILE" 2> /dev/null \
@@ -298,7 +295,7 @@ aard_process() {
 
 		cat "$AARD_FILE" > "$AARD_BUFFER"
 		;;
-	htmlx)
+	htmlx | hx)
 		command -v w3m > /dev/null 2>&1 || aard_quit 1 'aard_process htmlx: Failed to find program: w3m'
 
 		w3m -config /dev/null -T html/text "$(cat "$AARD_BUFFER")" > "$AARD_FILE" 2> /dev/null \
@@ -306,7 +303,7 @@ aard_process() {
 
 		cat "$AARD_FILE" > "$AARD_BUFFER"
 		;;
-	image)
+	image | i)
 		if [ -z "$AARD_IMAGE" ]; then
 			aard_quit 1 'aard_process image: Failed to read variable: AARD_IMAGE'
 		fi
@@ -314,17 +311,17 @@ aard_process() {
 		eval " $AARD_IMAGE $(cat "$AARD_BUFFER")" 2> /dev/null \
 			|| aard_quit 2 'aard_process image: Failed to show image'
 		;;
-	light)
+	light | li)
 		command -v xbacklight > /dev/null 2>&1 \
 			|| aard_quit 1 'aard_process light: Failed to find program: xbacklight'
 
 		xbacklight -set "$(cat "$AARD_BUFFER")" 2> /dev/null \
 			|| aard_quit 2 'aard_process light: Failed to set light'
 		;;
-	log)
+	log | l)
 		aard_log
 		;;
-	media)
+	media | m)
 		if [ -z "$AARD_MEDIA" ]; then
 			aard_quit 1 'aard_process media: Failed to read variable: AARD_MEDIA'
 		fi
@@ -334,13 +331,13 @@ aard_process() {
 		eval " $AARD_MEDIA $AARD_TARGET" 2> /dev/null \
 			|| aard_quit 2 'aard_process media: Failed to play media'
 		;;
-	option)
+	option | o)
 		aard_iterate $(printf '' | aard_prompt 'aard option:')
 		;;
-	paste)
+	paste | p)
 		cat "$AARD_BUFFER"
 		;;
-	pdf)
+	pdf | pd)
 		command -v enscript > /dev/null 2>&1 \
 			|| aard_quit 1 'aard_process pdf: Failed to find program: enscript'
 
@@ -370,19 +367,19 @@ aard_process() {
 				|| aard_quit 7 'aard_process pdf: Failed to show pdf'
 		fi
 		;;
-	post)
+	post | po)
 		AARD_POSTFIX="$(printf '' | aard_prompt 'post:' \
 			|| aard_quit 1 'aard_process post: Failed to read user input')"
 
 		printf '%s%s' "$(cat "$AARD_BUFFER")" "$AARD_POSTFIX" > "$AARD_BUFFER"
 		;;
-	pre)
+	pre | pr)
 		AARD_PREFIX="$(printf '' | aard_prompt 'pre:' \
 			|| aard_quit 1 'aard_process pre: Failed to read user input')"
 
 		printf '%s%s' "$AARD_PREFIX" "$(cat "$AARD_BUFFER")" > "$AARD_BUFFER"
 		;;
-	qr)
+	qr | q)
 		command -v qrencode > /dev/null 2>&1 \
 			|| aard_quit 1 'aard_process qr: Failed to find program: qrencode'
 
@@ -397,7 +394,7 @@ aard_process() {
 
 		aard_process image
 		;;
-	random)
+	random | ra)
 		command -v w3m > /dev/null 2>&1 \
 			|| aard_quit 1 'aard_process random: Failed to find program: w3m'
 
@@ -411,24 +408,27 @@ aard_process() {
 
 		aard_process clean
 		;;
-	report)
+	report | re)
 		aard_report_set "$(cat "$AARD_BUFFER")" \
 			|| aard_quit 1 'aard_process report: Failed to report'
 		;;
-	run)
+	run | r)
 		aard_iterate 'set' 'x'
 		;;
-	select)
+	select | se)
 		aard_select 'aard select' > "$AARD_FILE" < "$AARD_BUFFER"
 		cat "$AARD_FILE" > "$AARD_BUFFER"
 		;;
-	set)
+	set | s)
 		AARD_SET_INPUT="$(printf '' | aard_prompt 'aard set:' \
 			|| aard_quit 1 'aard_process set: Failed to read user input')"
 
 		printf '%s' "$AARD_SET_INPUT" > "$AARD_BUFFER"
 		;;
-	tty)
+	stdin | -)
+		cat - > "$AARD_BUFFER"
+		;;
+	tty | t)
 		if [ -z "$AARD_TTY" ]; then
 			aard_quit 1 'aard_process tty: Failed to read variable: AARD_TTY'
 		fi
@@ -436,7 +436,7 @@ aard_process() {
 		eval " $AARD_TTY" 2> /dev/null \
 			|| aard_quit 2 'aard_process tty: Failed to open terminal'
 		;;
-	url)
+	url | u)
 		command -v urlisolator > /dev/null 2>&1 \
 			|| aard_quit 1 'aard_process url: Failed to find program: urlisolator'
 
@@ -445,7 +445,7 @@ aard_process() {
 
 		aard_select 'aard url' > "$AARD_BUFFER" < "$AARD_FILE"
 		;;
-	word)
+	word | w)
 		if [ -z "$AARD_DICTIONARY_PATH" ]; then
 			aard_quit 1 'aard_process word: Failed to read variable: AARD_DICTIONARY_PATH'
 		fi
@@ -465,7 +465,7 @@ aard_process() {
 
 		printf '%s' "$AARD_X_OUTPUT" > "$AARD_BUFFER"
 		;;
-	yt)
+	yt | y)
 		command -v yt-dlp > /dev/null 2>&1 \
 			|| aard_quit 1 'aard_process yt: Failed to find program: yt-dlp'
 
