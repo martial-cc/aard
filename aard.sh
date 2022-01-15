@@ -224,7 +224,7 @@ aard_process() {
 	edit)
 		cat "$AARD_BUFFER" > "$AARD_FILE"
 
-		eval " $AARD_EDITOR $AARD_FILE" 2> /dev/null \
+		eval " $AARD_EDITOR $AARD_FILE" \
 			|| aard_quit 1 'aard_process edit: Failed to edit temporary file'
 
 		cat "$AARD_FILE" > "$AARD_BUFFER"
